@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>美睫線上預約</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: 安靜、溫暖、像一張精緻的店家名片
+   IDEA: 一本店家服務目錄，翻到想要的項目就能直接預約
+   PICTURE: 灰褐漸層的店家封面，圓形店標、店名與資訊膠囊
+   COLOUR and TYPE: 米白底、白色卡片、奶茶金按鈕、深墨字；思源黑體
+   LAYOUT: 單欄最寬640px，黏頂分頁，分類標題加數量，預約流程用底部彈出視窗 */
+:root{color-scheme:light dark;--bg:light-dark(#f5f2ec,#17150f);--card:light-dark(#ffffff,#221f19);--ink:light-dark(#2b2620,#f2ece2);--mute:light-dark(#8b8277,#a89e90);--soft:light-dark(#efe9df,#2e2a22);--line:light-dark(#ebe4d8,#36312a);--gold:light-dark(#c8a96a,#cfae6c);--goldink:#2d2414;--ok:light-dark(#3d7f58,#7cc79a);--warn:light-dark(#a8722a,#e3b06a);--danger:light-dark(#b23b30,#ef8b80)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 "Noto Sans TC",system-ui,sans-serif;overflow-x:clip;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit}
+.hero{background:linear-gradient(180deg,#5e5a54 0%,#8d877e 45%,#d8d2c8 100%);color:#fff;text-align:center;padding:40px 16px 34px}
+.logo{width:84px;height:84px;border-radius:22px;background:#fff;margin:0 auto 14px;display:grid;place-items:center;color:#5e5a54;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.logo svg{width:54px;height:34px}
+.hero h1{font:700 clamp(26px,6vw,34px)/1.15 "Noto Sans TC",sans-serif;margin:0 0 14px;letter-spacing:.04em;text-wrap:balance;text-shadow:0 1px 6px rgba(0,0,0,.2)}
+.pills{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:18px}
+.pill{display:inline-flex;align-items:center;gap:5px;background:rgba(40,36,30,.55);border-radius:999px;padding:5px 12px;font-size:13px;white-space:nowrap;color:#fff;text-decoration:none}
+.pill svg{width:14px;height:14px}
+.cta{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:999px;background:var(--gold);color:var(--goldink);font-weight:700;padding:11px 22px;min-height:46px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.bar{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);display:flex;justify-content:center;gap:6px;padding:8px 12px}
+.bar button{border:0;background:none;border-radius:999px;padding:8px 16px;min-height:42px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:15px;color:var(--mute)}
+.bar button.on{background:#2b2620;color:#fff;font-weight:700}
+:root[data-theme=dark] .bar button.on{background:#f2ece2;color:#17150f}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .bar button.on{background:#f2ece2;color:#17150f}}
+.bar .n{background:rgba(255,255,255,.22);border-radius:999px;padding:0 7px;font-size:12px}
+.wrap{max-width:640px;margin:0 auto;padding:18px 16px 48px}
+.notice{white-space:pre-line;font-size:15px;line-height:1.75;margin:4px 0 16px}
+.notice b{font-size:18px}
+.links{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:0 0 22px}
+.lk{display:inline-flex;align-items:center;gap:6px;background:var(--soft);border-radius:999px;padding:8px 14px;min-height:40px;color:var(--ink);text-decoration:none;font-size:14px}
+.lk svg{width:16px;height:16px}
+.cat{display:flex;align-items:center;gap:8px;color:var(--mute);font-size:14px;font-weight:500;letter-spacing:.08em;margin:22px 0 10px}
+.cnt{background:var(--soft);border-radius:999px;padding:0 8px;font-size:12px;letter-spacing:0}
+.svc{display:grid;grid-template-columns:64px 1fr auto;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+.thumb{width:64px;height:64px;border-radius:12px;background:var(--soft);display:grid;place-items:center;color:var(--gold);overflow:hidden}
+.thumb svg{width:40px;height:26px}
+.svc h3{margin:0;font-size:16px;line-height:1.35}
+.svc .d{margin:3px 0 6px;color:var(--mute);font-size:13px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.price{font-weight:700;font-size:16px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.dur{display:inline-flex;align-items:center;gap:4px;background:var(--soft);border-radius:999px;padding:1px 9px;font-size:12px;color:var(--mute);white-space:nowrap}
+.dur svg{width:12px;height:12px}
+.mem{font-size:12px;color:var(--gold);font-weight:700;white-space:nowrap}
+.go{border:0;border-radius:999px;background:var(--gold);color:var(--goldink);font-weight:700;padding:8px 18px;min-height:40px;cursor:pointer;white-space:nowrap}
+@media(max-width:420px){.svc{grid-template-columns:56px 1fr;gap:12px}.thumb{width:56px;height:56px}.svc .go{grid-column:1/-1;width:100%}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:12px}
+.empty{color:var(--mute);text-align:center;padding:28px 8px}
+.demo{font-size:12px;color:var(--mute);text-align:center;margin-top:20px}
+.demo a{color:inherit}
+/* 彈出視窗 */
+.mask{position:fixed;inset:0;z-index:20;background:rgba(30,26,20,.45);display:flex;align-items:flex-end;justify-content:center}
+@media(min-width:700px){.mask{align-items:center}}
+.sheet{background:var(--card);width:100%;max-width:680px;max-height:92vh;border-radius:22px 22px 0 0;display:flex;flex-direction:column;animation:up .25s ease-out}
+@media(min-width:700px){.sheet{border-radius:22px}}
+@keyframes up{from{transform:translateY(30px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.sheet{animation:none}}
+.sh{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line)}
+.sh h2{margin:0;font-size:18px}
+.x{width:36px;height:36px;border-radius:50%;border:0;background:var(--soft);cursor:pointer;font-size:18px;line-height:1}
+.prog{display:flex;gap:6px;padding:14px 20px 0}
+.prog i{flex:1;height:3px;border-radius:3px;background:var(--line)}.prog i.on{background:var(--gold)}
+.sb{padding:10px 20px 18px;overflow-y:auto;flex:1}
+.stepno{font-size:13px;color:var(--mute);margin:0}
+.sum1{font-size:14px;font-weight:700;margin:0 0 12px}
+.hint{font-size:14px;color:var(--mute);margin:0 0 12px}
+.sf{padding:12px 20px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--line);text-align:center}
+.sf .tip{font-size:13px;color:var(--mute);margin:0 0 8px}
+.sf .row{display:flex;gap:10px}
+.b1,.b2{flex:1;border:0;border-radius:14px;min-height:50px;font-weight:700;font-size:16px;cursor:pointer}
+.b1{background:var(--gold);color:var(--goldink)}.b1:disabled{background:var(--soft);color:var(--mute);cursor:default}
+.b2{background:var(--soft);color:var(--ink);font-weight:500}
+.add{display:grid;grid-template-columns:46px 1fr;gap:12px;width:100%;text-align:left;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px;cursor:pointer}
+.add .ic{width:46px;height:46px;border-radius:10px;background:var(--soft);display:grid;place-items:center;font-size:22px;color:var(--mute)}
+.add.on{border-color:var(--gold)}.add.on .ic{background:var(--gold);color:var(--goldink)}
+.add b{font-size:15px}.add p{margin:2px 0;font-size:13px;color:var(--mute)}
+.dates{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+@media(max-width:480px){.dates{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.dt{border:1.5px solid var(--line);background:var(--card);border-radius:12px;padding:8px 2px;cursor:pointer;text-align:center}
+.dt small{display:block;font-size:12px;color:var(--mute)}.dt b{font-size:19px;font-weight:500;font-variant-numeric:tabular-nums}
+.dt.on{border-color:var(--gold);background:var(--gold);color:var(--goldink)}.dt.on small{color:var(--goldink)}
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px}
+.slot{min-height:46px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);cursor:pointer;font-size:16px;font-variant-numeric:tabular-nums}
+.slot:disabled{text-decoration:line-through;opacity:.35;cursor:default}
+.slot.on{border-color:var(--gold);background:var(--gold);color:var(--goldink);font-weight:700}
+label{display:block;font-weight:500;font-size:14px;margin:12px 0 4px}
+label em{color:var(--danger);font-style:normal}
+input,textarea{width:100%;font:16px "Noto Sans TC",sans-serif;color:var(--ink);background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:11px 12px;min-height:46px}
+textarea{min-height:76px;resize:vertical}
+input:focus,textarea:focus,button:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+.seg{display:flex;gap:8px}
+.chip{border:1.5px solid var(--line);background:var(--card);border-radius:12px;min-height:44px;padding:8px 12px;font-size:15px;cursor:pointer;flex:1}
+.chip.on{border-color:var(--gold);background:var(--soft);font-weight:700}
+.sum{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:15px;background:var(--soft);border-radius:14px;padding:12px 14px}
+.sum span:nth-child(odd){color:var(--mute);white-space:nowrap}
+.bank{border:1.5px dashed var(--gold);border-radius:14px;padding:12px 14px;margin:14px 0;font-size:15px}
+.bank .r{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:3px 0}
+.bank .r span:first-child{color:var(--mute);white-space:nowrap}
+.copy{border:0;background:var(--soft);color:var(--ink);border-radius:9px;padding:6px 10px;font-size:13px;cursor:pointer;min-height:34px;white-space:nowrap}
+.check{display:flex;gap:10px;align-items:flex-start;font-weight:400;font-size:14px;margin-top:12px}
+.check input{width:22px;height:22px;min-height:0;flex:none;margin-top:1px;accent-color:var(--gold)}
+.err{color:var(--danger);background:light-dark(#fbecea,#3a201d);border-radius:10px;padding:10px 12px;font-size:14px;margin-top:12px}
+.done{text-align:center;padding:8px 0}
+.ring{width:64px;height:64px;border-radius:50%;background:var(--gold);color:var(--goldink);display:grid;place-items:center;margin:4px auto 10px;font-size:30px}
+.badge{display:inline-block;font-size:12px;font-weight:700;border-radius:8px;padding:2px 8px;white-space:nowrap}
+.b-wait{background:light-dark(#faefdc,#3d2e1a);color:var(--warn)}.b-ok{background:light-dark(#e3f2e8,#1d3326);color:var(--ok)}
+.b-done{background:var(--soft);color:var(--mute)}.b-cancel{background:var(--soft);color:var(--mute);text-decoration:line-through}
+.item{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.item .top{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.item .t{font-weight:700;font-variant-numeric:tabular-nums}
+.item p{margin:4px 0;font-size:14px}
+.sub{color:var(--mute);font-size:13px}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.inline{display:flex;gap:8px;margin-top:8px}.inline input{flex:1}.inline .go{min-height:46px}
+.dayhead{font-weight:700;margin:18px 0 8px;font-size:15px;color:var(--gold)}
+.wk{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-top:8px}.wk .chip{padding:8px 0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;text-align:center}
+.cal .w{font-size:12px;color:var(--mute);padding:4px 0}
+.day{aspect-ratio:1;border:0;border-radius:10px;background:var(--soft);cursor:pointer;font-size:13px;line-height:1.1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.day small{font-size:10px;color:var(--mute)}
+.day.off{background:none;border:1.5px dashed var(--line);color:var(--mute)}
+.day.mod{box-shadow:inset 0 0 0 2px var(--gold)}
+.day:disabled{opacity:.35;cursor:default}
+.calh{display:flex;align-items:center;justify-content:space-between;margin:10px 0 8px}
+.icon{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--card);cursor:pointer;font-size:18px}
+.icon:disabled{opacity:.3;cursor:default}
+.wide{width:100%;margin-top:14px}
+.spin{display:inline-block;width:18px;height:18px;border:2.5px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sp .8s linear infinite;vertical-align:-3px}
+@keyframes sp{to{transform:rotate(1turn)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}
+.bar{overflow-x:auto;scrollbar-width:none}.bar button{flex:none}
+@media(max-width:560px){.bar{justify-content:flex-start}}
+.logo img{width:100%;height:100%;object-fit:cover;border-radius:22px}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.svc.ed{grid-template-columns:64px 1fr}.svc.hid{opacity:.55}
+.svc.ed .acts .chip{flex:none;min-height:40px;padding:6px 14px}
+.icon.sm{width:40px;height:40px;flex:none}
+.imgrow{display:flex;gap:14px;align-items:center;margin:10px 0}
+.thumb.big{width:84px;height:84px}
+.logo.sm{width:72px;height:72px;margin:0;border:1px solid var(--line);flex:none}
+.up{position:relative;display:inline-flex;align-items:center;min-height:40px;padding:6px 14px;border-radius:999px;background:var(--soft);cursor:pointer;margin:0 6px 4px 0;font-size:14px;font-weight:500}
+.up input{position:absolute;opacity:0;width:1px;height:1px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;z-index:40;max-width:90vw}
+</style>
+</head>
+<body>
+<div id="app"><p class="empty"><span class="spin"></span> 載入中…</p></div>
+<div id="modal"></div>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script>
+{
+/* ====== 設定：部署後填入 ====== */
+const CONFIG={
+ API_URL:'https://script.google.com/macros/s/AKfycbx_0TqKnBZuKrwV1I7V3u_wOov-RA_bJtlmm-G5AkdynSeOowgUQHErU-bkehUmB-X7/exec', // Apps Script 部署後的網址
+ LIFF_ID:'2012816481-rIj6o1DD' // LINE 內嵌網頁編號
+};
+/* ============================== */
+const DEMO=!CONFIG.API_URL;
+const ADMIN=location.hash==='#admin';
+const app=document.getElementById('app'),modal=document.getElementById('modal');
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money=n=>'NT$'+Number(n||0).toLocaleString('zh-TW');
+const WD='日一二三四五六';
+function tpe(){const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(new Date());const g=t=>(p.find(x=>x.type===t)||{}).value;return{date:`${g('year')}-${g('month')}-${g('day')}`,min:(+g('hour')%24)*60+(+g('minute'))};}
+function addDays(ds,n){const p=ds.split('-').map(Number);return new Date(Date.UTC(p[0],p[1]-1,p[2]+n)).toISOString().slice(0,10);}
+function wday(ds){const p=ds.split('-').map(Number);return new Date(Date.UTC(p[0],p[1]-1,p[2])).getUTCDay();}
+function nice(ds){const p=ds.split('-');return `${+p[1]}月${+p[2]}日（${WD[wday(ds)]}）`;}
+function ymAdd(ym,n){const p=ym.split('-').map(Number);return new Date(Date.UTC(p[0],p[1]-1+n,1)).toISOString().slice(0,7);}
+const toMin=t=>{const p=String(t).split(':');return +p[0]*60+(+p[1]||0);};
+const toHM=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+const clone=o=>JSON.parse(JSON.stringify(o));
+const pic=(src,cls)=>src?`<img class="${cls||''}" src="${esc(src)}" alt="">`:LASH;
+async function shrink(file,max){const url=URL.createObjectURL(file);try{const img=new Image();await new Promise((r,j)=>{img.onload=r;img.onerror=j;img.src=url;});const s=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.75);}finally{URL.revokeObjectURL(url);}}
+function toast(s){const t=document.createElement('div');t.className='toast';t.textContent=s;document.body.appendChild(t);setTimeout(()=>t.remove(),2200);}
+const badge=s=>`<span class="badge ${({'待付訂金':'b-wait','已確認':'b-ok','已完成':'b-done','已取消':'b-cancel'})[s]||'b-done'}">${esc(s)}</span>`;
+const LASH=`<svg viewBox="0 0 64 40" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 14c8 12 44 12 52 0"/><path d="M12 19l-5 9M19 22l-3 10M26 24l-1 10M33 24.5v10M40 24l1 10M47 22l3 10M53 19l5 9"/></svg>`;
+const I={
+ clock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+ phone:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>',
+ pin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>',
+ cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+ list:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg>',
+ ig:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".8" fill="currentColor"/></svg>',
+ chat:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H9l-5 4z"/></svg>',
+ mail:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>',
+ user:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>'
+};
+
+/* ---------- 示範資料（正式上線後改在 Google 試算表編輯） ---------- */
+const DEMO_SHOP={shop:'曜顏室 · 藝術美睫設計',logo:'',hours:'11:00 – 23:30',phone:'0970236679',address:'高雄市新興區復橫一路91號',
+ notice:'📣 新客 9折 體驗優惠 ✨\n\n✨獨家兩大特色：\n｜iPad眼型分析、設計\n✔️根據三庭五眼分析，模擬嫁接後的樣子。\n\n｜專屬下午茶甜點，享受一段美好放鬆小時光🍮\n不限消費金額都能享用（純卸睫不提供），菜單不定時更換。\n\n‼️我不用AI改/發作品，全是真實拍攝！請放心技術😊',
+ links:{instagram:'https://www.instagram.com/radianteyelash_',line:'https://line.me/R/ti/p/@jux2303z',map:'https://share.google/hbAPdiIhGPMHD5pqc',email:'radiant.eyelash2026@gmail.com'}};
+const DEMO_SVC=[
+ {id:'S01',cat:'新中式設計',name:'現場討論款式',desc:'不知道要接什麼款式？我會用iPad分析你的眼型，再和你溝通喜歡的方向，重新設計適合你的款式。價格依款式濃度定價，嫁接前會告知金額。',price:1500,member:0,dur:180,deposit:300,img:'',on:true},
+ {id:'S02',cat:'新中式設計',name:'中式經典單根',desc:'微妝感效果，中式更強調「調整眼型」，使用不同翹度去調整、嫁接。',price:1600,member:1300,dur:150,deposit:300,img:'',on:true},
+ {id:'S03',cat:'新中式設計',name:'經典太陽花穿插／INS風',desc:'經典的長短穿插，能搭配不同捲度、翹度去嫁接適合的感覺。',price:1900,member:1600,dur:150,deposit:300,img:'',on:true},
+ {id:'S04',cat:'新中式設計',name:'仿真小奶絨／小絨花',desc:'使用3種以上翹度設計，濃度可依喜好調整，適合自身睫毛條件正常、多的客人。舒適度★★★★★ 好整理度★★★★★',price:1900,member:1600,dur:150,deposit:300,img:'',on:true},
+ {id:'S05',cat:'新中式設計',name:'國風眼線／斜飛／狐系 系列',desc:'強調眼尾的眼線感，嫁接完自帶高冷感！好看但需要後期整理。',price:1900,member:1600,dur:150,deposit:300,img:'',on:true},
+ {id:'S06',cat:'新中式設計',name:'輕透漫畫款／動物系列',desc:'適合第一次嫁接或想嘗試妝感風格又不要太誇張的人。漫畫款屬於造型款，回家需要配合打理睫毛。',price:1900,member:1600,dur:180,deposit:300,img:'',on:true},
+ {id:'S07',cat:'新中式設計',name:'妝感濃密漫畫／動物系列',desc:'拍照上鏡、顯妝容的款式，濃密款更好調整眼型，把缺點隱藏、優點放大！（含濃密泰式、野生毛絨漫畫、歐美款等）',price:2100,member:1800,dur:180,deposit:300,img:'',on:true},
+ {id:'S08',cat:'新中式設計',name:'4D多層次設計 系列',desc:'使用至少4種翹度嫁接，做出橫向、縱向毛流的豐富感，依自身風格、三庭五眼、眼型設計。',price:2300,member:2000,dur:180,deposit:300,img:'',on:true},
+ {id:'S09',cat:'日式嫁接',name:'經典微妝感單根（100 - 150根）',desc:'日式單根更強調整齊、根根分明，自然散開像刷睫毛膏，搭配睫毛雨衣也能有女團束感。不確定適合日式或中式，歡迎現場討論！',price:1500,member:1200,dur:90,deposit:300,img:'',on:true},
+ {id:'S10',cat:'日式嫁接',name:'妝感單根（全眼接滿）',desc:'比經典單根更濃密、更有妝感，好打理★★★★★',price:1700,member:1400,dur:150,deposit:300,img:'',on:true},
+ {id:'S11',cat:'日式嫁接',name:'睫毛膏款 系列',desc:'接完像刷完濃密睫毛膏但沒有蒼蠅腿的感覺，內眼線感明顯！好打理★★★★★',price:1900,member:1600,dur:150,deposit:300,img:'',on:true},
+ {id:'S12',cat:'眉睫',name:'睫毛管理（上睫毛）',desc:'包含免費深層滋養、修護染黑。用自身睫毛做出完美捲翹度，捲翹度可依喜好調整。',price:1500,member:1200,dur:90,deposit:300,img:'',on:true},
+ {id:'S13',cat:'眉睫',name:'睫毛管理（下睫毛）',desc:'用自身睫毛做出捲翹度。下睫毛不多的人不建議，可先傳照片到官方LINE評估。',price:1200,member:900,dur:60,deposit:300,img:'',on:true},
+ {id:'S14',cat:'眉睫',name:'野生毛流塑眉',desc:'把沒有線條或亂糟糟的眉毛整理整齊，或打造韓式、歐美的野生毛流感！（含1對1修眉教學、居家修眉組）',price:1300,member:1000,dur:60,deposit:300,img:'',on:true},
+ {id:'S15',cat:'其他',name:'本店卸睫 不續接',desc:'',price:400,member:200,dur:30,deposit:100,img:'',on:true},
+ {id:'S16',cat:'其他',name:'他店卸睫 不續接',desc:'',price:600,member:0,dur:30,deposit:100,img:'',on:true},
+ {id:'S17',cat:'其他',name:'補睫毛（14天內）',desc:'會員半價。14天內（含預約當天），嫁接完隔天算第一天；超過補睫時間到現場會請你卸掉重新嫁接。',price:800,member:400,dur:90,deposit:200,img:'',on:true}];
+const DEMO_ADD=[
+ {id:'A1',name:'下睫毛 設計款',desc:'仿真款、單根束感、塔尖款、野生款等，依上睫毛款式與自身下睫毛條件搭配。',price:500,member:250,dur:0,on:true},
+ {id:'A2',name:'彩色／鐳射／碎鑽 睫毛',desc:'在黑色睫毛中點綴彩色，或換成全眼同色；鐳射、碎鑽點綴在睫毛上。',price:300,member:100,dur:0,on:true},
+ {id:'A3',name:'本店卸睫 續接',desc:'會員免費',price:200,member:0,dur:0,on:true},
+ {id:'A4',name:'他店卸睫 續接',desc:'',price:500,member:300,dur:0,on:true}];
+const DEMO_DEP={bank:'示範銀行',code:'000',account:'0000-1234-5678',name:'（請在後台填寫戶名）',policy:'預約請支付訂金，超過12小時未付訂金系統自動取消。',hours:12};
+const D={closed:[1],start:'11:00',end:'23:30',ex:{},owner:false,bk:[],cu:[]};
+(function seed(){const t=tpe().date;const mk=(off,start,sid,name,phone,status,last5,mine)=>{const s=DEMO_SVC.find(x=>x.id===sid);D.bk.push({id:'B'+(1000+D.bk.length),date:addDays(t,off),start,end:toHM(toMin(start)+s.dur),service:s.name,addons:'',price:s.price,deposit:s.deposit,name,phone,first:'否',note:'',last5,status,mine:!!mine});};
+ mk(1,'11:00','S09','林佳蓉','0912345678','已確認','12345');mk(1,'14:00','S17','陳怡君','0922333444','待付訂金','');mk(2,'12:00','S02','張雅婷','0933111222','待付訂金','88231');mk(3,'15:30','S12','王小美','0955666777','已確認','',true);mk(-3,'13:00','S09','黃詩涵','0966777888','已完成','40112');
+ D.cu=[{name:'林佳蓉',phone:'0912345678',birthday:'1995-03-12',last:addDays(t,1),count:4,line:true},{name:'陳怡君',phone:'0922333444',birthday:'',last:addDays(t,1),count:1,line:true},{name:'張雅婷',phone:'0933111222',birthday:'1998-11-02',last:addDays(t,2),count:2,line:true},{name:'黃詩涵',phone:'0966777888',birthday:'',last:addDays(t,-3),count:6,line:false}];})();
+function dOpen(ds){const n=tpe(),t=n.date;if(ds<t||ds>addDays(t,30))return false;if(ds===t&&n.min+90>toMin(D.end))return false;if(D.ex[ds])return D.ex[ds]==='營業';return !D.closed.includes(wday(ds));}
+function demoHandle(a,d){
+ const t=tpe();
+ switch(a){
+  case 'config':return Object.assign({ok:true,services:clone(DEMO_SVC),addons:clone(DEMO_ADD),deposit:clone(DEMO_DEP),window:30,today:t.date},clone(DEMO_SHOP));
+  case 'adminSaveItems':DEMO_SVC.splice(0,DEMO_SVC.length,...d.services);DEMO_ADD.splice(0,DEMO_ADD.length,...d.addons);return{ok:true};
+  case 'adminSaveShop':Object.assign(DEMO_SHOP,d.shop);Object.assign(DEMO_DEP,d.deposit);return{ok:true};
+  case 'dates':{const out=[];for(let i=0;i<=30;i++){const ds=addDays(t.date,i);if(dOpen(ds))out.push(ds);}return{ok:true,dates:out};}
+  case 'slots':{if(!dOpen(d.date))return{ok:true,slots:[]};const dur=+d.dur;const out=[];for(let m=toMin(D.start);m+dur<=toMin(D.end);m+=30){let ok=!(d.date===t.date&&m<t.min+60);if(ok)ok=!D.bk.some(b=>b.date===d.date&&b.status!=='已取消'&&toMin(b.start)<m+dur&&toMin(b.end)>m);out.push({time:toHM(m),ok});}return{ok:true,slots:out};}
+  case 'book':{const s=DEMO_SVC.find(x=>x.id===d.serviceId);if(!/^09\d{8}$/.test(d.phone))return{ok:false,error:'手機號碼格式不正確'};const ad=DEMO_ADD.filter(x=>(d.addons||[]).includes(x.id));const dur=s.dur+ad.reduce((a,x)=>a+x.dur,0);const price=s.price+ad.reduce((a,x)=>a+x.price,0);const id='B'+Date.now().toString().slice(-8);D.bk.push({id,date:d.date,start:d.time,end:toHM(toMin(d.time)+dur),service:s.name,addons:ad.map(x=>x.name).join('、'),price,deposit:s.deposit,name:d.name,phone:d.phone,first:d.first,note:d.note,last5:d.last5||'',status:'待付訂金',mine:true});return{ok:true,id,status:'待付訂金',deposit:s.deposit};}
+  case 'mine':return{ok:true,bookings:D.bk.filter(b=>b.mine).sort((x,y)=>(y.date+y.start).localeCompare(x.date+x.start))};
+  case 'pay':{const b=D.bk.find(x=>x.id===d.id);if(b)b.last5=d.last5;return{ok:true};}
+  case 'adminData':return{ok:true,today:t.date,services:clone(DEMO_SVC),addons:clone(DEMO_ADD),shop:clone(DEMO_SHOP),deposit:clone(DEMO_DEP),bookings:D.bk,customers:D.cu,weekly:{closed:D.closed,start:D.start,end:D.end},exceptions:Object.entries(D.ex).map(([date,state])=>({date,state})),owner:D.owner};
+  case 'adminDay':if(d.state==='預設')delete D.ex[d.date];else D.ex[d.date]=d.state;return{ok:true};
+  case 'adminWeekly':D.closed=d.closed;D.start=d.start;D.end=d.end;return{ok:true};
+  case 'adminStatus':{const b=D.bk.find(x=>x.id===d.id);if(b)b.status=d.status;return{ok:true};}
+  case 'adminSetOwner':D.owner=true;return{ok:true};
+ }
+ return{ok:false,error:'未知的動作'};
+}
+async function api(action,data,get){
+ data=data||{};
+ if(DEMO)return new Promise(r=>setTimeout(()=>r(demoHandle(action,data)),200));
+ try{let r;
+  if(get)r=await fetch(CONFIG.API_URL+'?'+new URLSearchParams(Object.assign({action},data)));
+  else r=await fetch(CONFIG.API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({action},data))});
+  return await r.json();
+ }catch(e){return{ok:false,error:'連線失敗，請檢查網路後再試一次'};}
+}
+
+/* ---------- LINE ---------- */
+let idToken='';
+async function initLiff(force){
+ if(DEMO||!CONFIG.LIFF_ID||!window.liff)return;
+ try{await liff.init({liffId:CONFIG.LIFF_ID});
+  if(!liff.isLoggedIn()){if(force)liff.login({redirectUri:location.href});return;}
+  idToken=liff.getIDToken()||'';
+ }catch(e){}
+}
+
+/* ---------- 客人端 ---------- */
+let cfg=null;
+const S={tab:'svc',mine:null};
+const B={open:false,step:1,svc:null,add:[],dates:null,date:'',slots:null,time:'',f:{name:'',phone:'',birthday:'',first:'是',note:'',last5:''},agree:false,busy:false,err:'',result:null};
+const hero=()=>`<div class="hero"><div class="logo">${pic(cfg.logo)}</div><h1>${esc(cfg.shop)}</h1><div class="pills">${cfg.hours?`<span class="pill">${I.clock}${esc(cfg.hours)}</span>`:''}${cfg.phone?`<a class="pill" href="tel:${esc(cfg.phone.replace(/\D/g,''))}">${I.phone}${esc(cfg.phone)}</a>`:''}${cfg.address?`<span class="pill">${I.pin}${esc(cfg.address)}</span>`:''}</div>${ADMIN?'':`<button class="cta" data-a="jump">${I.cal}選擇服務預約</button>`}</div>`;
+function linksRow(){const L=cfg.links||{};const it=[['instagram',I.ig,'Instagram'],['line',I.chat,'LINE'],['map',I.pin,'Google 地圖'],['email',I.mail,'Email']].filter(x=>L[x[0]]);
+ return it.length?`<div class="links">${it.map(([k,ic,t])=>`<a class="lk" href="${esc(k==='email'?'mailto:'+L[k]:L[k])}" target="_blank" rel="noopener">${ic}${t}</a>`).join('')}</div>`:'';}
+function render(){
+ if(ADMIN)return renderAdmin();
+ if(!cfg){app.innerHTML=`<div class="wrap"><div class="err">${esc(S.err||'載入失敗')}</div></div>`;return;}
+ let h=hero()+`<nav class="bar"><button data-a="tab" data-v="svc" class="${S.tab==='svc'?'on':''}">${I.list}服務 <span class="n">${cfg.services.length}</span></button><button data-a="tab" data-v="contact" class="${S.tab==='contact'?'on':''}">${I.phone.replace('<svg','<svg width="16" height="16"')}聯絡</button><button data-a="tab" data-v="mine" class="${S.tab==='mine'?'on':''}">${I.user}我的預約</button></nav><div class="wrap">`;
+ h+=S.tab==='svc'?svcView():S.tab==='contact'?contactView():mineView();
+ if(DEMO)h+=`<p class="demo">示範模式：資料只存在這個畫面，不會真的送出。<a href="#admin">看老闆後台示範</a></p>`;
+ app.innerHTML=h+'</div>';
+}
+function svcView(){
+ let h=`<div class="notice">${esc(cfg.notice||'')}</div>${linksRow()}`;
+ if(cfg.deposit&&cfg.deposit.hours)h+=`<p class="cat" style="margin-top:0">預約需支付訂金，超過${cfg.deposit.hours}小時未付款系統自動取消。</p>`;
+ const cats=[];cfg.services.forEach(s=>{if(!cats.includes(s.cat))cats.push(s.cat);});
+ for(const c of cats){const list=cfg.services.filter(s=>s.cat===c);
+  h+=`<div class="cat" id="cat-${cats.indexOf(c)}">${esc(c)} <span class="cnt">${list.length}</span></div>`;
+  h+=list.map(s=>`<div class="svc"><div class="thumb">${pic(s.img)}</div><div><h3>${esc(s.name)}</h3><p class="d">${esc(s.desc)}</p><div class="meta"><span class="price">${money(s.price)}</span>${s.member?`<span class="mem">會員價 ${money(s.member)}</span>`:''}<span class="dur">${I.clock}${s.dur} 分鐘</span></div></div><button class="go" data-a="pick" data-id="${esc(s.id)}">預約</button></div>`).join('');}
+ return h;
+}
+function contactView(){
+ return `<div class="card"><p style="margin:0 0 8px"><b>${esc(cfg.shop)}</b></p>${cfg.hours?`<p class="sub">營業時間　${esc(cfg.hours)}</p>`:''}${cfg.phone?`<p class="sub">電話　${esc(cfg.phone)}</p>`:''}${cfg.address?`<p class="sub">地址　${esc(cfg.address)}</p>`:''}</div>${linksRow()}<p class="sub" style="text-align:center">改期或取消預約，請直接在LINE聊天室傳訊息給我們。</p>`;
+}
+function mineView(){
+ if(!DEMO&&!idToken)return `<div class="card"><p style="margin:0">請從店家的LINE官方帳號選單打開這個頁面，才能查看你的預約。</p></div>`;
+ if(!S.mine)return `<p class="empty"><span class="spin"></span></p>`;
+ if(!S.mine.length)return `<p class="empty">還沒有預約紀錄。</p>`;
+ return S.mine.map(b=>`<div class="item"><div class="top"><span class="t">${nice(b.date)} ${esc(b.start)}</span>${badge(b.status)}</div><p>${esc(b.service)}${b.addons?'＋'+esc(b.addons):''}・${money(b.price)}（訂金 ${money(b.deposit)}）</p><p class="sub">編號 ${esc(b.id)}${b.last5?'・匯款後五碼 '+esc(b.last5):''}</p>
+ ${b.status==='待付訂金'&&!b.last5?`<div class="inline"><input inputmode="numeric" maxlength="5" placeholder="匯款後五碼" id="l5-${esc(b.id)}" aria-label="匯款後五碼"><button class="go" data-a="pay" data-id="${esc(b.id)}">送出</button></div>`:''}
+ ${b.status==='待付訂金'&&b.last5?`<p class="sub">已填寫後五碼，等待店家確認收款。</p>`:''}</div>`).join('')+`<p class="sub" style="text-align:center">改期或取消，請直接在LINE聊天室傳訊息給我們。</p>`;
+}
+/* 預約流程 */
+const steps=()=>cfg.addons&&cfg.addons.length?['add','date','time','info']:['date','time','info'];
+const curKind=()=>steps()[B.step-1];
+const totDur=()=>B.svc.dur+cfg.addons.filter(a=>B.add.includes(a.id)).reduce((s,a)=>s+(+a.dur||0),0);
+const totPrice=()=>B.svc.price+cfg.addons.filter(a=>B.add.includes(a.id)).reduce((s,a)=>s+(+a.price||0),0);
+function renderModal(){
+ if(!B.open){modal.innerHTML='';document.body.style.overflow='';return;}
+ document.body.style.overflow='hidden';
+ const st=steps(),k=B.result?'done':curKind();
+ const title={add:'選擇加購（可略過）',date:'選擇日期',time:'選擇時間',info:'填寫資料與訂金',done:'預約已送出'}[k];
+ let body='',foot='';
+ const back=`<button class="b2" data-a="bk">上一步</button>`;
+ if(k!=='done')body+=`<p class="stepno">步驟 ${B.step} / ${st.length}</p><p class="sum1">${esc(B.svc.name)}・${money(totPrice())}・${totDur()} 分鐘${B.date?'｜'+nice(B.date):''}${B.time&&k==='info'?' '+B.time:''}</p>`;
+ if(k==='add'){
+  body+=`<p class="hint">可依需要加購，不選也可以直接按「下一步」。加購會影響可預約的時段，請先在這裡選好。</p>`+cfg.addons.map(a=>`<button class="add ${B.add.includes(a.id)?'on':''}" data-a="addon" data-id="${esc(a.id)}" aria-pressed="${B.add.includes(a.id)}"><span class="ic">${B.add.includes(a.id)?'✓':'＋'}</span><span><b>${esc(a.name)}</b>${a.desc?`<p>${esc(a.desc)}</p>`:''}<p>${money(a.price)}${a.member?'・會員價 '+money(a.member):''}・${+a.dur?'加 '+a.dur+' 分鐘':'不佔用時間'}</p></span></button>`).join('');
+  foot=`<div class="row"><button class="b1" data-a="nx">下一步</button></div>`;
+ }else if(k==='date'){
+  if(!B.dates)body+=`<p class="empty"><span class="spin"></span></p>`;
+  else if(!B.dates.length)body+=`<p class="empty">近期沒有可預約的日期。</p>`;
+  else body+=`<div class="dates">${B.dates.map(ds=>{const p=ds.split('-');return `<button class="dt ${B.date===ds?'on':''}" data-a="date" data-v="${ds}"><small>${+p[1]}/${+p[2]} 週${WD[wday(ds)]}</small><b>${+p[2]}</b></button>`;}).join('')}</div>`;
+  foot=`${B.date?'':'<p class="tip">請先選擇日期</p>'}<div class="row">${B.step>1?back:''}<button class="b1" data-a="nx" ${B.date?'':'disabled'}>下一步</button></div>`;
+ }else if(k==='time'){
+  if(!B.slots)body+=`<p class="empty"><span class="spin"></span></p>`;
+  else if(!B.slots.some(x=>x.ok))body+=`<p class="empty">這天已經約滿了，請選其他日期。</p>`;
+  else body+=`<div class="slots">${B.slots.map(x=>`<button class="slot ${B.time===x.time?'on':''}" data-a="time" data-v="${x.time}" ${x.ok?'':'disabled aria-label="'+x.time+' 已額滿"'}>${x.time}</button>`).join('')}</div>`;
+  foot=`${B.time?'':'<p class="tip">請先選擇時間</p>'}<div class="row">${back}<button class="b1" data-a="nx" ${B.time?'':'disabled'}>下一步</button></div>`;
+ }else if(k==='info'){
+  const f=B.f,dp=cfg.deposit,ad=cfg.addons.filter(a=>B.add.includes(a.id));
+  body+=`<label for="f-name">姓名 <em>*</em></label><input id="f-name" data-f="name" autocomplete="name" value="${esc(f.name)}" placeholder="例如：王小美">
+  <label for="f-phone">手機 <em>*</em></label><input id="f-phone" data-f="phone" type="tel" inputmode="numeric" autocomplete="tel" value="${esc(f.phone)}" placeholder="0912345678">
+  <label for="f-bday">生日（選填，生日當月有優惠）</label><input id="f-bday" data-f="birthday" type="date" value="${esc(f.birthday)}">
+  <label>是否第一次來？</label><div class="seg"><button class="chip ${f.first==='是'?'on':''}" data-a="first" data-v="是">第一次</button><button class="chip ${f.first==='否'?'on':''}" data-a="first" data-v="否">來過了</button></div>
+  <label for="f-note">備註（過敏、想要的款式等）</label><textarea id="f-note" data-f="note" maxlength="200">${esc(f.note)}</textarea>
+  <div class="sum" style="margin-top:16px"><span>項目</span><b>${esc(B.svc.name)}</b>${ad.length?`<span>加購</span><span>${esc(ad.map(a=>a.name).join('、'))}</span>`:''}<span>時間</span><b>${nice(B.date)} ${B.time}</b><span>總價</span><span>${money(totPrice())}</span><span>訂金</span><b>${money(B.svc.deposit)}</b></div>
+  ${bankBox(dp)}
+  <label for="f-last5">匯款後五碼（已匯款可先填，之後也能補填）</label><input id="f-last5" data-f="last5" inputmode="numeric" maxlength="5" value="${esc(f.last5)}" placeholder="例如：12345">
+  <label class="check"><input type="checkbox" data-a="agree" ${B.agree?'checked':''}><span>我已閱讀訂金規定：${esc(dp.policy)}</span></label>
+  ${B.err?`<div class="err">${esc(B.err)}</div>`:''}`;
+  foot=`<div class="row">${B.busy?'':back}<button class="b1" data-a="submit" ${B.busy?'disabled':''}>${B.busy?'<span class="spin"></span> 送出中':'送出預約'}</button></div>`;
+ }else{
+  const r=B.result,dp=cfg.deposit;
+  body+=`<div class="done"><div class="ring">✓</div><p style="margin:0">${nice(B.date)} ${B.time}<br><b>${esc(B.svc.name)}</b></p><p>預約編號 <b>${esc(r.id)}</b>　${badge(r.status)}</p></div>
+  ${r.status==='待付訂金'?`<p style="margin:0 0 4px">請在 <b>${dp.hours} 小時內</b>匯款訂金 <b>${money(r.deposit)}</b>，逾時會自動取消。</p>${bankBox(dp)}<p class="sub">${B.f.last5?'已收到你填的後五碼，店家確認後會傳LINE通知你。':'匯款後到「我的預約」填寫後五碼，店家確認後會傳LINE通知你。'}</p>`:''}`;
+  foot=`<div class="row"><button class="b2" data-a="close">完成</button><button class="b1" data-a="toMine">查看我的預約</button></div>`;
+ }
+ modal.innerHTML=`<div class="mask" data-a="maskclose"><div class="sheet" role="dialog" aria-modal="true" aria-label="${title}"><div class="sh"><h2>${title}</h2><button class="x" data-a="close" aria-label="關閉">×</button></div>${k!=='done'?`<div class="prog">${st.map((_,i)=>`<i class="${i<B.step?'on':''}"></i>`).join('')}</div>`:''}<div class="sb">${body}</div><div class="sf">${foot}</div></div></div>`;
+}
+function bankBox(dp){
+ if(!dp||!dp.account)return `<div class="bank">匯款帳戶請洽店家。</div>`;
+ return `<div class="bank"><b>訂金匯款資訊</b>
+ <div class="r"><span>銀行</span><span>${esc(dp.bank)}（${esc(dp.code)}）</span><button class="copy" data-a="copy" data-v="${esc(dp.code)}">複製代碼</button></div>
+ <div class="r"><span>帳號</span><span style="font-variant-numeric:tabular-nums">${esc(dp.account)}</span><button class="copy" data-a="copy" data-v="${esc(String(dp.account).replace(/\D/g,''))}">複製帳號</button></div>
+ <div class="r"><span>戶名</span><span>${esc(dp.name)}</span><span></span></div></div>`;
+}
+async function loadDates(){B.dates=null;renderModal();const r=await api('dates',{},true);B.dates=r.ok?r.dates:[];if(!r.ok)toast(r.error);renderModal();}
+async function loadSlots(){B.slots=null;renderModal();const r=await api('slots',{date:B.date,dur:totDur()},true);B.slots=r.ok?r.slots:[];if(!r.ok)toast(r.error);renderModal();}
+async function loadMine(){S.mine=null;render();const r=await api('mine',{idToken});S.mine=r.ok?r.bookings:[];if(!r.ok)toast(r.error);render();}
+function enter(){const k=curKind();if(k==='date'&&!B.dates)loadDates();else if(k==='time')loadSlots();else renderModal();}
+function validate(){const f=B.f;f.name=f.name.trim();f.phone=f.phone.replace(/[\s-]/g,'');if(!f.name)return'請填寫姓名';if(!/^09\d{8}$/.test(f.phone))return'手機號碼請填 09 開頭的10碼數字';if(f.last5&&!/^\d{5}$/.test(f.last5))return'匯款後五碼要是5位數字';if(!B.agree)return'請先勾選同意訂金規定';return'';}
+async function clientAct(a,el){
+ B.err='';
+ if(a==='tab'){S.tab=el.dataset.v;if(S.tab==='mine'&&(DEMO||idToken))loadMine();else render();return;}
+ if(a==='jump'){S.tab='svc';render();const c=document.getElementById('cat-0');if(c)c.scrollIntoView({behavior:'smooth',block:'start'});return;}
+ if(a==='pick'){Object.assign(B,{open:true,step:1,svc:cfg.services.find(s=>s.id===el.dataset.id),add:[],date:'',time:'',slots:null,agree:false,result:null});enter();return;}
+ if(a==='close'||(a==='maskclose'&&el===document.querySelector('.mask'))){if(B.busy)return;B.open=false;renderModal();return;}
+ if(a==='addon'){const id=el.dataset.id;B.add=B.add.includes(id)?B.add.filter(x=>x!==id):B.add.concat(id);B.time='';renderModal();return;}
+ if(a==='date'){B.date=el.dataset.v;B.time='';renderModal();return;}
+ if(a==='time'){B.time=el.dataset.v;renderModal();return;}
+ if(a==='first'){B.f.first=el.dataset.v;renderModal();return;}
+ if(a==='nx'){B.step++;enter();return;}
+ if(a==='bk'){B.step=Math.max(1,B.step-1);enter();return;}
+ if(a==='copy'){try{await navigator.clipboard.writeText(el.dataset.v);toast('已複製');}catch(e){toast('無法複製，請長按文字自行複製');}return;}
+ if(a==='submit'){
+  const e=validate();if(e){B.err=e;renderModal();return;}
+  B.busy=true;renderModal();
+  const r=await api('book',Object.assign({serviceId:B.svc.id,addons:B.add,date:B.date,time:B.time,idToken},B.f));
+  B.busy=false;
+  if(!r.ok){B.err=r.error||'送出失敗';if(/剛被預約走/.test(B.err)){B.step=steps().indexOf('time')+1;toast(B.err);loadSlots();return;}renderModal();return;}
+  B.result=r;B.f.last5='';B.f.note='';renderModal();return;
+ }
+ if(a==='toMine'){B.open=false;renderModal();S.tab='mine';loadMine();return;}
+ if(a==='pay'){const id=el.dataset.id;const v=(document.getElementById('l5-'+id)||{}).value||'';if(!/^\d{5}$/.test(v)){toast('請輸入5位數字');return;}el.disabled=true;const r=await api('pay',{idToken,id,last5:v});if(r.ok){toast('已送出，等待店家確認');loadMine();}else{toast(r.error);el.disabled=false;}return;}
+}
+
+/* ---------- 老闆後台 ---------- */
+const A={pw:'',data:null,tab:'list',filter:'todo',ym:'',q:'',busy:false,err:''};
+try{A.pw=sessionStorage.getItem('lash-admin-pw')||'';}catch(e){}
+function renderAdmin(){
+ let h=(cfg?hero():'')+`<div class="wrap">`;
+ if(!A.data){
+  h+=`<div class="card"><b>老闆後台</b><label for="pw">後台密碼</label><input id="pw" type="password" autocomplete="current-password" value="${esc(A.pw)}" placeholder="${DEMO?'示範模式：輸入任何文字':''}">${A.err?`<div class="err">${esc(A.err)}</div>`:''}<button class="b1 wide" data-a="login" ${A.busy?'disabled':''}>${A.busy?'<span class="spin"></span>':'登入'}</button></div>`;
+  if(DEMO)h+=`<p class="demo">示範模式：資料只存在這個畫面。<a href="#">回到客人預約頁</a></p>`;
+  app.innerHTML=h+'</div>';return;
+ }
+ const d=A.data,tb=[['list','預約'],['days','營業日'],['items','項目'],['shop','店家'],['cust','客人'],['noti','通知']];
+ h=(cfg?hero():'')+`<nav class="bar">${tb.map(([k,t])=>`<button data-a="atab" data-v="${k}" class="${A.tab===k?'on':''}">${t}</button>`).join('')}</nav><div class="wrap">`;
+ h+=A.tab==='list'?adminList(d):A.tab==='days'?adminDays(d):A.tab==='items'?adminItems(d):A.tab==='shop'?adminShop(d):A.tab==='cust'?adminCust(d):adminNoti(d);
+ if(DEMO)h+=`<p class="demo">示範模式：重新整理就會還原。<a href="#">回到客人預約頁</a></p>`;
+ app.innerHTML=h+'</div>';
+}
+function adminList(d){
+ const t=d.today,todo=d.bookings.filter(b=>b.status==='待付訂金').length;
+ let list=d.bookings.slice();
+ if(A.filter==='todo')list=list.filter(b=>b.status==='待付訂金');
+ else if(A.filter==='up')list=list.filter(b=>b.status==='已確認'&&b.date>=t);
+ list.sort((x,y)=>(x.date+x.start).localeCompare(y.date+y.start));
+ let h=`<div class="seg">${[['todo','待收訂金 '+todo],['up','即將到來'],['all','全部']].map(([k,tx])=>`<button class="chip ${A.filter===k?'on':''}" data-a="filter" data-v="${k}">${tx}</button>`).join('')}</div>`;
+ if(!list.length)return h+`<p class="empty">${A.filter==='todo'?'沒有待確認的訂金。':'目前沒有預約。'}</p>`;
+ let cur='';
+ for(const b of list){
+  if(b.date!==cur){cur=b.date;h+=`<div class="dayhead">${nice(b.date)}${b.date===t?'・今天':''}</div>`;}
+  h+=`<div class="item"><div class="top"><span class="t">${esc(b.start)}–${esc(b.end)}　${esc(b.name)}</span>${badge(b.status)}</div>
+  <p>${esc(b.service)}${b.addons?'＋'+esc(b.addons):''}・${money(b.price)}・訂金 ${money(b.deposit)}</p>
+  <p class="sub">手機 ${esc(b.phone)}${b.first==='是'?'・第一次來':''}${b.last5?'・匯款後五碼 <b>'+esc(b.last5)+'</b>':b.status==='待付訂金'?'・尚未填後五碼':''}</p>
+  ${b.note?`<p class="sub">備註：${esc(b.note)}</p>`:''}
+  <div class="acts">${b.status==='待付訂金'?`<button class="chip on" data-a="status" data-id="${esc(b.id)}" data-v="已確認">已收到訂金</button><button class="chip" data-a="status" data-id="${esc(b.id)}" data-v="已取消">取消</button>`:''}${b.status==='已確認'?`<button class="chip" data-a="status" data-id="${esc(b.id)}" data-v="已完成">完成服務</button><button class="chip" data-a="status" data-id="${esc(b.id)}" data-v="已取消">取消</button>`:''}</div></div>`;
+ }
+ return h;
+}
+function effOpen(d,ds){const e=d.exceptions.find(x=>x.date===ds);if(e)return{open:e.state==='營業',mod:true};return{open:!d.weekly.closed.includes(wday(ds)),mod:false};}
+function adminDays(d){
+ const t=d.today;A.ym=A.ym||t.slice(0,7);const ym=A.ym,p=ym.split('-').map(Number);
+ const first=new Date(Date.UTC(p[0],p[1]-1,1)).getUTCDay(),last=new Date(Date.UTC(p[0],p[1],0)).getUTCDate();
+ let h=`<div class="card"><b>每週固定公休</b><div class="wk">${[...WD].map((w,i)=>`<button class="chip ${d.weekly.closed.includes(i)?'on':''}" data-a="wk" data-v="${i}" aria-pressed="${d.weekly.closed.includes(i)}">${w}</button>`).join('')}</div>
+ <div class="two"><div><label for="ws">營業開始</label><input id="ws" type="time" step="1800" value="${esc(d.weekly.start)}"></div><div><label for="we">營業結束</label><input id="we" type="time" step="1800" value="${esc(d.weekly.end)}"></div></div>
+ <button class="b1 wide" data-a="saveWeekly">儲存每週設定</button></div>
+ <div class="card"><b>個別日期調整</b><p class="sub" style="margin:2px 0 0">點一下日期就能切換營業或公休；有金色外框的是特別調整過的日子。</p>
+ <div class="calh"><button class="icon" data-a="amon" data-v="-1" ${ym<=t.slice(0,7)?'disabled':''} aria-label="上個月">‹</button><b>${p[0]}年${p[1]}月</b><button class="icon" data-a="amon" data-v="1" aria-label="下個月">›</button></div><div class="cal">${[...WD].map(w=>`<div class="w">${w}</div>`).join('')}`;
+ for(let i=0;i<first;i++)h+='<div></div>';
+ for(let i=1;i<=last;i++){const ds=ym+'-'+String(i).padStart(2,'0');const e=effOpen(d,ds);const n=d.bookings.filter(b=>b.date===ds&&b.status!=='已取消').length;
+  h+=`<button class="day ${e.open?'':'off'} ${e.mod?'mod':''}" data-a="toggle" data-v="${ds}" ${ds<t?'disabled':''} aria-label="${nice(ds)} ${e.open?'營業':'公休'}${n?'，'+n+'筆預約':''}">${i}<small>${e.open?(n?n+'筆':'營業'):'休'}</small></button>`;}
+ return h+`</div></div>`;
+}
+function adminCust(d){
+ const q=A.q.trim();const list=d.customers.filter(c=>!q||c.name.includes(q)||c.phone.includes(q)).sort((a,b)=>String(b.last).localeCompare(String(a.last)));
+ return `<input id="q" placeholder="搜尋姓名或手機" value="${esc(A.q)}" aria-label="搜尋客人"><p class="sub" style="margin:8px 0">共 ${d.customers.length} 位客人</p>${list.map(c=>`<div class="item"><div class="top"><span class="t">${esc(c.name)}</span><span class="sub">來過 ${c.count} 次</span></div><p class="sub">手機 ${esc(c.phone)}${c.birthday?'・生日 '+esc(c.birthday):''}${c.line?'':'・未綁LINE'}</p><p class="sub">最近預約 ${c.last?nice(c.last):'—'}</p></div>`).join('')||'<p class="empty">找不到符合的客人。</p>'}`;
+}
+function adminNoti(d){
+ return `<div class="card"><b>LINE 通知</b><p>${d.owner?'✔ 已設定：有新預約、客人填寫匯款後五碼時，會傳LINE通知你。':'尚未設定。設定後，有新預約時會傳LINE通知你。'}</p>
+ <p class="sub">請在手機的 LINE 裡打開後台網址，再按下面的按鈕，系統會記住你的 LINE 帳號。</p>
+ <button class="b1 wide" data-a="owner">把我設為通知接收者</button></div>
+ <div class="card"><b>其他設定</b><p class="sub" style="margin-bottom:0">服務項目、加購、價格、照片在「項目」分頁修改；店名、店標、公告、匯款帳戶在「店家」分頁修改；可預約的日子和時間在「營業日」分頁設定。改完客人重新打開頁面就會看到。</p></div>
+ <button class="b2 wide" data-a="logout">登出</button>`;
+}
+function adminItems(d){
+ const cats=[];d.services.forEach(s=>{if(!cats.includes(s.cat))cats.push(s.cat);});
+ let h=`<p class="sub" style="margin-top:0">點「編輯」修改內容；按「上架中」可以暫時隱藏，客人就看不到。每次修改都會馬上儲存。</p><button class="b1 wide" style="margin:0 0 4px" data-a="newSvc">＋ 新增服務項目</button>`;
+ for(const c of cats){const list=d.services.map((s,i)=>[s,i]).filter(([s])=>s.cat===c);
+  h+=`<div class="cat">${esc(c)} <span class="cnt">${list.length}</span></div>`+list.map(([s,i],n)=>itemRow('svc',s,i,n===0,n===list.length-1)).join('');}
+ h+=`<div class="cat" style="margin-top:32px">加購項目（選服務後可加選） <span class="cnt">${d.addons.length}</span></div>`+d.addons.map((a,i)=>itemRow('add',a,i,i===0,i===d.addons.length-1)).join('')+`<button class="b2 wide" data-a="newAdd">＋ 新增加購項目</button>`;
+ return h;
+}
+function itemRow(k,s,i,first,last){
+ const svc=k==='svc';
+ return `<div class="svc ed ${s.on===false?'hid':''}"><div class="thumb">${pic(s.img)}</div><div><h3>${esc(s.name)}</h3><div class="meta" style="margin-top:4px"><span class="price">${money(s.price)}</span>${s.member?`<span class="mem">會員價 ${money(s.member)}</span>`:''}${svc||+s.dur?`<span class="dur">${I.clock}${svc?'':'加 '}${s.dur} 分鐘</span>`:''}${svc?`<span class="dur">訂金 ${money(s.deposit)}</span>`:''}</div>
+ <div class="acts"><button class="chip" data-a="edit" data-k="${k}" data-i="${i}">編輯</button><button class="chip ${s.on===false?'':'on'}" data-a="onoff" data-k="${k}" data-i="${i}">${s.on===false?'已下架':'上架中'}</button><button class="icon sm" data-a="mv" data-k="${k}" data-i="${i}" data-v="-1" ${first?'disabled':''} aria-label="往上移">↑</button><button class="icon sm" data-a="mv" data-k="${k}" data-i="${i}" data-v="1" ${last?'disabled':''} aria-label="往下移">↓</button></div></div></div>`;
+}
+function renderEdit(){
+ if(!A.edit){modal.innerHTML='';document.body.style.overflow='';return;}
+ document.body.style.overflow='hidden';
+ const e=A.edit,it=e.item,svc=e.k==='svc';
+ const cats=[...new Set(A.data.services.map(s=>s.cat))];
+ const f=(key,lab,num,extra)=>`<label for="e-${key}">${lab}</label><input id="e-${key}" data-e="${key}" ${num?'type="number" min="0" inputmode="numeric"':''} value="${esc(it[key]??'')}" ${extra||''}>`;
+ let b=`<div class="imgrow"><div class="thumb big">${pic(it.img)}</div><div><label class="up">上傳照片<input type="file" accept="image/*" data-img="item"></label>${it.img?'<button class="copy" data-a="rmImg">移除照片</button>':''}<p class="sub" style="margin:4px 0 0">選填，會自動縮小。</p></div></div>`;
+ if(svc)b+=f('cat','分類（打新的名稱就會新增一個分類）',0,'list="catlist"')+`<datalist id="catlist">${cats.map(c=>`<option value="${esc(c)}">`).join('')}</datalist>`;
+ b+=f('name','名稱 <em>*</em>')+`<label for="e-desc">說明</label><textarea id="e-desc" data-e="desc" maxlength="400">${esc(it.desc||'')}</textarea>`;
+ b+=`<div class="two">${f('price','價格 <em>*</em>',1)}${f('member','會員價（0＝不顯示）',1)}</div><div class="two">${f('dur',svc?'服務時間（分鐘）<em>*</em>':'多佔用幾分鐘（0＝不佔用）',1)}${svc?f('deposit','訂金',1):'<div></div>'}</div>`;
+ if(e.err)b+=`<div class="err">${esc(e.err)}</div>`;
+ const foot=e.del?`<p class="tip">確定要刪除「${esc(it.name)}」嗎？刪除後無法復原，已經預約的紀錄不受影響。</p><div class="row"><button class="b2" data-a="delNo">不要刪除</button><button class="b1" style="background:var(--danger);color:#fff" data-a="delYes">確定刪除</button></div>`
+  :`<div class="row">${e.i>=0?'<button class="b2" data-a="del">刪除</button>':''}<button class="b1" data-a="saveItem" ${A.busy?'disabled':''}>${A.busy?'<span class="spin"></span>':'儲存'}</button></div>`;
+ modal.innerHTML=`<div class="mask" data-a="edClose"><div class="sheet" role="dialog" aria-modal="true" aria-label="編輯項目"><div class="sh"><h2>${e.i<0?'新增':'編輯'}${svc?'服務項目':'加購項目'}</h2><button class="x" data-a="edClose" aria-label="關閉">×</button></div><div class="sb">${b}</div><div class="sf">${foot}</div></div></div>`;
+}
+function adminShop(d){
+ const s=d.shop,p=d.deposit,L=s.links||{};
+ const f=(id,lab,val,type)=>`<label for="${id}">${lab}</label><input id="${id}" ${type?`type="${type}"`:''} value="${esc(val??'')}">`;
+ return `<div class="card"><b>店家資料</b><div class="imgrow"><div class="logo sm">${pic(s.logo)}</div><div><label class="up">上傳店標<input type="file" accept="image/*" data-img="logo"></label>${s.logo?'<button class="copy" data-a="rmLogo">移除</button>':''}</div></div>
+ ${f('s-shop','店名',s.shop)}${f('s-hours','營業時間（只是顯示用，可預約時段在「營業日」設定）',s.hours)}${f('s-phone','電話',s.phone,'tel')}${f('s-address','地址',s.address)}
+ <label for="s-notice">公告（客人一進來就會看到）</label><textarea id="s-notice" style="min-height:170px">${esc(s.notice)}</textarea></div>
+ <div class="card"><b>連結（不用的留空）</b>${f('s-ig','Instagram 網址',L.instagram)}${f('s-line','LINE 加好友網址',L.line)}${f('s-map','Google 地圖網址',L.map)}${f('s-email','Email',L.email,'email')}</div>
+ <div class="card"><b>訂金與匯款</b><div class="two">${f('d-bank','銀行名稱',p.bank)}${f('d-code','銀行代碼',p.code)}</div>${f('d-account','帳號',p.account)}${f('d-name','戶名',p.name)}${f('d-hours','預約後幾小時內要付訂金',p.hours,'number')}<label for="d-policy">訂金規定（客人送出前要勾選同意）</label><textarea id="d-policy">${esc(p.policy)}</textarea></div>
+ <button class="b1 wide" data-a="saveShop" ${A.busy?'disabled':''}>${A.busy?'<span class="spin"></span>':'儲存店家設定'}</button>`;
+}
+function readShop(){
+ const v=id=>{const el=document.getElementById(id);return el?el.value.trim():null;};if(v('s-shop')===null)return;
+ const s=A.data.shop,p=A.data.deposit;
+ Object.assign(s,{shop:v('s-shop'),hours:v('s-hours'),phone:v('s-phone'),address:v('s-address'),notice:document.getElementById('s-notice').value,links:{instagram:v('s-ig'),line:v('s-line'),map:v('s-map'),email:v('s-email')}});
+ Object.assign(p,{bank:v('d-bank'),code:v('d-code'),account:v('d-account'),name:v('d-name'),hours:Math.max(1,Math.round(+v('d-hours')||12)),policy:document.getElementById('d-policy').value.trim()});
+}
+async function saveItems(msg){const r=await api('adminSaveItems',{pw:A.pw,services:A.data.services,addons:A.data.addons});if(r.ok)toast(msg);else{toast(r.error||'儲存失敗');loadAdmin();}return r.ok;}
+async function refreshCfg(){const r=await api('config',{},true);if(r.ok)cfg=r;}
+async function loadAdmin(){const r=await api('adminData',{pw:A.pw});if(!r.ok){A.data=null;A.err=r.error;try{sessionStorage.removeItem('lash-admin-pw');}catch(e){}}else{A.data=r;A.err='';try{sessionStorage.setItem('lash-admin-pw',A.pw);}catch(e){}}A.busy=false;renderAdmin();}
+async function adminAct(a,el){
+ if(a==='login'){A.pw=(document.getElementById('pw')||{}).value||'';if(!A.pw){A.err='請輸入密碼';renderAdmin();return;}A.busy=true;renderAdmin();loadAdmin();return;}
+ if(a==='atab'){A.tab=el.dataset.v;renderAdmin();return;}
+ if(a==='filter'){A.filter=el.dataset.v;renderAdmin();return;}
+ if(a==='status'){const v=el.dataset.v;el.disabled=true;const r=await api('adminStatus',{pw:A.pw,id:el.dataset.id,status:v});if(r.ok){toast(v==='已確認'?'已確認，會通知客人':v==='已取消'?'已取消，會通知客人':'已標記完成');loadAdmin();}else{toast(r.error);el.disabled=false;}return;}
+ if(a==='wk'){const i=+el.dataset.v,c=A.data.weekly.closed;A.data.weekly.closed=c.includes(i)?c.filter(x=>x!==i):c.concat(i).sort();renderAdmin();return;}
+ if(a==='saveWeekly'){const s=document.getElementById('ws').value,e=document.getElementById('we').value;if(!s||!e||s>=e){toast('營業時間不正確');return;}const r=await api('adminWeekly',{pw:A.pw,closed:A.data.weekly.closed,start:s,end:e});if(r.ok){toast('已儲存');loadAdmin();}else toast(r.error);return;}
+ if(a==='amon'){A.ym=ymAdd(A.ym,+el.dataset.v);renderAdmin();return;}
+ if(a==='toggle'){const ds=el.dataset.v,d=A.data,e=effOpen(d,ds),want=e.open?'休':'營業';const def=!d.weekly.closed.includes(wday(ds));const state=(want==='營業')===def?'預設':want;
+  const n=d.bookings.filter(b=>b.date===ds&&b.status!=='已取消').length;
+  el.disabled=true;const r=await api('adminDay',{pw:A.pw,date:ds,state});
+  if(r.ok){toast(`${nice(ds)} 設為${want==='休'?'公休':'營業'}${want==='休'&&n?`，這天還有 ${n} 筆預約，記得聯絡客人`:''}`);loadAdmin();}else{toast(r.error);el.disabled=false;}return;}
+ if(a==='owner'){
+  if(!DEMO&&!idToken){if(CONFIG.LIFF_ID&&window.liff){await initLiff(true);if(!idToken)return;}else{toast('請在LINE裡打開後台網址');return;}}
+  const r=await api('adminSetOwner',{pw:A.pw,idToken});if(r.ok){toast('設定完成');loadAdmin();}else toast(r.error);return;}
+ if(a==='newSvc'||a==='newAdd'){const svc=a==='newSvc';A.edit={k:svc?'svc':'add',i:-1,item:svc?{id:'S'+Date.now().toString(36),cat:(A.data.services[0]||{}).cat||'',name:'',desc:'',price:'',member:0,dur:'',deposit:300,img:'',on:true}:{id:'A'+Date.now().toString(36),name:'',desc:'',price:'',member:0,dur:0,on:true}};renderEdit();return;}
+ if(a==='edit'){const k=el.dataset.k,arr=k==='svc'?A.data.services:A.data.addons;A.edit={k,i:+el.dataset.i,item:clone(arr[+el.dataset.i])};renderEdit();return;}
+ if(a==='edClose'){if(!A.busy){A.edit=null;renderEdit();}return;}
+ if(a==='rmImg'){A.edit.item.img='';renderEdit();return;}
+ if(a==='del'){A.edit.del=true;renderEdit();return;}
+ if(a==='delNo'){A.edit.del=false;renderEdit();return;}
+ if(a==='delYes'){const arr=A.edit.k==='svc'?A.data.services:A.data.addons;const nm=A.edit.item.name;arr.splice(A.edit.i,1);A.edit=null;renderEdit();renderAdmin();await saveItems(`已刪除「${nm}」`);return;}
+ if(a==='saveItem'){const e=A.edit,it=e.item,svc=e.k==='svc';it.name=String(it.name||'').trim();if(svc)it.cat=String(it.cat||'').trim()||'其他';for(const k of ['price','member','dur','deposit'])if(k in it)it[k]=Math.max(0,Math.round(+it[k]||0));
+  if(!it.name){e.err='請填寫名稱';renderEdit();return;}if(svc&&!it.dur){e.err='請填寫服務時間';renderEdit();return;}
+  const arr=svc?A.data.services:A.data.addons;if(e.i<0){if(svc){let j=-1;arr.forEach((s,n)=>{if(s.cat===it.cat)j=n;});if(j<0)arr.push(it);else arr.splice(j+1,0,it);}else arr.push(it);}else arr[e.i]=it;
+  A.busy=true;renderEdit();const ok=await saveItems('已儲存');A.busy=false;if(ok){A.edit=null;renderEdit();renderAdmin();}else renderEdit();return;}
+ if(a==='onoff'){const arr=el.dataset.k==='svc'?A.data.services:A.data.addons,s=arr[+el.dataset.i];s.on=s.on===false;renderAdmin();await saveItems(s.on?`「${s.name}」已上架`:`「${s.name}」已下架，客人看不到`);return;}
+ if(a==='mv'){const svc=el.dataset.k==='svc',arr=svc?A.data.services:A.data.addons,i=+el.dataset.i,dir=+el.dataset.v;let j=i+dir;while(svc&&j>=0&&j<arr.length&&arr[j].cat!==arr[i].cat)j+=dir;if(j<0||j>=arr.length)return;[arr[i],arr[j]]=[arr[j],arr[i]];renderAdmin();await saveItems('順序已更新');return;}
+ if(a==='rmLogo'){readShop();A.data.shop.logo='';renderAdmin();return;}
+ if(a==='saveShop'){readShop();if(!A.data.shop.shop){toast('請填寫店名');return;}A.busy=true;renderAdmin();const r=await api('adminSaveShop',{pw:A.pw,shop:A.data.shop,deposit:A.data.deposit});A.busy=false;if(r.ok){await refreshCfg();toast('店家設定已儲存');}else toast(r.error||'儲存失敗');renderAdmin();return;}
+ if(a==='logout'){A.data=null;A.pw='';try{sessionStorage.removeItem('lash-admin-pw');}catch(e){}renderAdmin();return;}
+}
+
+/* ---------- 事件 ---------- */
+document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b||b.disabled)return;const a=b.dataset.a;if(a==='agree')return;if(b.classList.contains('mask')&&e.target!==b)return;(ADMIN?adminAct:clientAct)(a,b);});
+document.addEventListener('change',async e=>{const t=e.target;if(t.dataset&&t.dataset.a==='agree')B.agree=t.checked;
+ if(t.dataset&&t.dataset.img&&t.files&&t.files[0]){const kind=t.dataset.img;let url;try{url=await shrink(t.files[0],kind==='logo'?200:280);}catch(_){toast('這張圖片無法讀取，請換一張');return;}
+  if(kind==='logo'){readShop();A.data.shop.logo=url;renderAdmin();toast('店標已換好，記得按「儲存店家設定」');}else if(A.edit){A.edit.item.img=url;renderEdit();}}});
+document.addEventListener('input',e=>{const f=e.target.dataset&&e.target.dataset.f;if(f)B.f[f]=e.target.value;const ek=e.target.dataset&&e.target.dataset.e;if(ek&&A.edit)A.edit.item[ek]=e.target.value;if(e.target.id==='q'){A.q=e.target.value;const pos=e.target.selectionStart;renderAdmin();const q=document.getElementById('q');if(q){q.focus();try{q.setSelectionRange(pos,pos);}catch(_){}}}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&B.open&&!B.busy){B.open=false;renderModal();}if(e.key==='Escape'&&A.edit&&!A.busy){A.edit=null;renderEdit();}if(e.key==='Enter'&&e.target.id==='pw'){e.preventDefault();adminAct('login');}});
+addEventListener('hashchange',()=>location.reload());
+
+/* ---------- 啟動 ---------- */
+(async()=>{
+ await initLiff(!ADMIN);
+ const r=await api('config',{},true);
+ if(r.ok){cfg=r;if(!ADMIN){cfg.services=cfg.services.filter(x=>x.on!==false);cfg.addons=(cfg.addons||[]).filter(x=>x.on!==false);}document.title=(cfg.shop||'美睫')+(ADMIN?'｜後台':'｜線上預約');}else S.err=r.error;
+ if(ADMIN){if(A.pw){A.busy=true;renderAdmin();loadAdmin();}else renderAdmin();}
+ else render();
+})();
+}
+</script>
+</body>
+</html>
